@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mejor Programador</title>
+    <link rel="stylesheet" href="estilos.css">
+    <style>
+        .mutacion {
+            background-color: yellow; /* Color para resaltar la mutación */
+        }
+    </style>
+</head>
+<body>
+    <h1>Mejor Programador</h1>
+
+    <label for="tecnica">Seleccionar Técnica:</label>
+    <select id="tecnica">
+        <option value="mejores">Mejores con Mejores</option>
+        <option value="peores">Peores con Peores</option>
+    </select>
+    
+    <button id="generarDatos">Generar Nueva Generación</button>
+
+    <!-- Contenedor para las generaciones -->
+    <div id="contenedorGeneraciones"></div>
+
+    <script>
+        let numeroGeneracion = 1;
+
+        // Función para generar un número aleatorio entre un mínimo y un máximo
+        function generarNumeroAleatorio(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Crear tabla de una generación
+        function crearTablaGeneracion(generacion, individuos, tecnica, promedio, mediana) {
+            const contenedor = document.getElementById("contenedorGeneraciones");
+
+            // Crear el contenedor para la nueva tabla
+            const divGeneracion = document.createElement("div");
+            divGeneracion.classList.add("generacion");
+            
+            // Crear el título de la generación
+            const titulo = document.createElement("h2");
+            titulo.textContent = Generación ${generacion} (${tecnica});
+            divGeneracion.appendChild(titulo);
+            
+            // Crear la tabla
+            const tabla = document.createElement("table");
+            tabla.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>x^9</th>
+                        <th>x^8</th>
+                        <th>x^7</th>
+                        <th>x^6</th>
+                        <th>x^5</th>
+                        <th>x^4</th>
+                        <th>x^3</th>
+                        <th>x^2</th>
+                        <th>x^1</th>
+                        <th>x^0</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${individuos.map((individuo, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            ${individuo.map((valor, posicion) => {
+                                // Aplicar color a la mutación
+                                const claseMutacion = valor.mutado ? 'mutacion' : '';
+                                return <td class="${claseMutacion}">${valor.valor}</td>;
+                            }).join('')}
+                        </tr>`).join('')}
+                </tbody>
+            `;
+            divGeneracion.appendChild(tabla);
+            
+            // Añadir estadísticas
+            const estadisticas = document.createElement("ul");
+            estadisticas.innerHTML = `
+                <li>Promedio: ${promedio}</li>
+                <li>Mediana: ${mediana}</li>
+            `;
+            divGeneracion.appendChild(estadisticas);
+
+            // Agregar la nueva generación al contenedor
+            contenedor.appendChild(divGeneracion);
+        }
+
+        // Generar nueva generación basada en la técnica seleccionada
+        function generarNuevaGeneracion(tecnica) {
+            // Generar datos para la nueva generación
+            const individuos = [];
+            for (let i = 0; i < 8; i++) {
+                const individuo = [];
+                // Generar 10 bits para cada individuo
+                for (let j = 0; j < 10; j++) {
+                    individuo.push({ valor: generarNumeroAleatorio(0, 1), mutado: false });
+                }
+
+                // Aplicar mutación en un bit aleatorio
+                const posicionMutacion = generarNumeroAleatorio(0, 9); // Seleccionar posición de mutación
+                individuo[posicionMutacion].valor = individuo[posicionMutacion].valor === 0 ? 1 : 0; // Mutar el bit
+                individuo[posicionMutacion].mutado = true; // Marcar el bit como mutado
+
+                individuos.push(individuo);
+            }
+
+            // Calcular estadísticas simuladas
+            const promedio = generarNumeroAleatorio(-1000000, 100000).toFixed(2);
+            const mediana = generarNumeroAleatorio(-500000, 50000).toFixed(2);
+
+            // Crear una nueva tabla para la generación
+            crearTablaGeneracion(numeroGeneracion, individuos, tecnica === 'mejores' ? 'Mejores con Mejores' : 'Peores con Peores', promedio, mediana);
+            
+            // Incrementar el contador de generaciones
+            numeroGeneracion++;
+        }
+
+        // Generar nueva generación al hacer clic en el botón
+        document.getElementById('generarDatos').addEventListener('click', function() {
+            const tecnicaSeleccionada = document.getElementById('tecnica').value;
+            generarNuevaGeneracion(tecnicaSeleccionada);
+        });
+
+        // Generar la primera generación al cargar la página
+        window.onload = function() {
+            generarNuevaGeneracion('mejores');  // Iniciar con la técnica de "Mejores con Mejores"
+        };
+    </script>
+</body>
+</html>
